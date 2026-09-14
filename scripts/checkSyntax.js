@@ -39,26 +39,71 @@ function getJavaScriptFiles(directory) {
   return files;
 }
 
-const filesToCheck = [
-  ...runtimeFiles.filter(fs.existsSync),
-  ...runtimeDirectories.flatMap(getJavaScriptFiles),
-];
+function checkFiles(files) {
+  let hasErrors = false;
 
-let hasErrors = false;
+  for (const file of files) {
+    const result = spawnSync(process.execPath, ["--check", file], {
+      stdio: "inherit",
+    });
 
-for (const file of filesToCheck) {
-  const result = spawnSync(process.execPath, ["--check", file], {
-    stdio: "inherit",
-  });
+    if (result.status !== 0) {
+      hasErrors = true;
+    }
+  }
 
-  if (result.status !== 0) {
-    hasErrors = true;
+  return !hasErrors;
+}
+
+function validateRuntimeFiles(projectRoot = process.cwd()) {
+  const requiredFiles = runtimeFiles.map((file) =>
+    path.join(projectRoot, file)
+  );
+
+  const missingRuntimeFiles = requiredFiles.filter(
+    (file) => !fs.existsSync(file)
+  );
+
+  if (missingRuntimeFiles.length > 0) {
+    console.error(
+      `Missing required runtime files:\n${missingRuntimeFiles.join("\n")}`
+    );
+    return false;
+  }
+
+  const directories = runtimeDirectories.map((directory) =>
+    path.join(projectRoot, directory)
+  );
+
+  const filesToCheck = [
+    ...requiredFiles,
+    ...directories.flatMap(getJavaScriptFiles),
+  ];
+
+  const passed = checkFiles(filesToCheck);
+
+  if (!passed) {
+    console.error("\nJavaScript syntax validation failed.");
+    return false;
+  }
+
+  console.log(
+    `JavaScript syntax validation passed (${filesToCheck.length} files).`
+  );
+
+  return true;
+}
+
+if (require.main === module) {
+  const passed = validateRuntimeFiles();
+
+  if (!passed) {
+    process.exit(1);
   }
 }
 
-if (hasErrors) {
-  console.error("\nJavaScript syntax validation failed.");
-  process.exit(1);
-}
-
-console.log(`JavaScript syntax validation passed (${filesToCheck.length} files).`);
+module.exports = {
+  getJavaScriptFiles,
+  checkFiles,
+  validateRuntimeFiles,
+};
