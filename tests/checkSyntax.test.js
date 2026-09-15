@@ -52,8 +52,7 @@ describe("checkSyntax", () => {
       path.join(nestedDirectory, "nested.js")
     );
   });
-
-  test("fails when a runtime JavaScript file has invalid syntax", () => {
+  test("fails when a nested runtime JavaScript file has invalid syntax", () => {
     const nestedDirectory = path.join(
       fixtureRoot,
       "controller",
@@ -62,25 +61,32 @@ describe("checkSyntax", () => {
 
     fs.mkdirSync(nestedDirectory, { recursive: true });
 
-    const validFile = path.join(
-      fixtureRoot,
-      "controller",
-      "valid.js"
+    fs.writeFileSync(
+      path.join(fixtureRoot, "index.js"),
+      "const index = true;"
     );
 
-    const invalidFile = path.join(
-      nestedDirectory,
-      "invalid.js"
+    fs.writeFileSync(
+      path.join(fixtureRoot, "connect.js"),
+      "const connect = true;"
     );
 
-    fs.writeFileSync(validFile, "const valid = true;");
-    fs.writeFileSync(invalidFile, "const = ;");
-
-    const files = getJavaScriptFiles(
-      path.join(fixtureRoot, "controller")
+    fs.writeFileSync(
+      path.join(fixtureRoot, "worker.js"),
+      "const worker = true;"
     );
 
-    expect(checkFiles(files)).toBe(false);
+    fs.writeFileSync(
+      path.join(fixtureRoot, "services.config.js"),
+      "const config = true;"
+    );
+
+    fs.writeFileSync(
+      path.join(nestedDirectory, "invalid.js"),
+      "const = ;"
+    );
+
+    expect(validateRuntimeFiles(fixtureRoot)).toBe(false);
   });
 
   test("fails when a required runtime file is missing", () => {
