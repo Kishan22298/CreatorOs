@@ -61,7 +61,6 @@ const CSRF_EXEMPT_PATHS = new Set([
  * Validates that the request includes a valid CSRF token matching the one in the secure cookie.
  * Blocks requests with missing or mismatched tokens with a 403 Forbidden response.
  */
-
 function verifyCsrf(req, res, next) {
     const safeMethods = ['GET', 'HEAD', 'OPTIONS', 'TRACE'];
 
