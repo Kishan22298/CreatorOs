@@ -13,7 +13,7 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build assets and validate JavaScript syntax
+# Build Tailwind CSS and validate runtime JavaScript syntax
 RUN npm run build
 
 # Expose the application port
