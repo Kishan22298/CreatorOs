@@ -52,6 +52,43 @@ describe("checkSyntax", () => {
       path.join(nestedDirectory, "nested.js")
     );
   });
+  test("passes when all required and nested runtime files have valid syntax", () => {
+    const nestedDirectory = path.join(
+      fixtureRoot,
+      "controller",
+      "nested"
+    );
+
+    fs.mkdirSync(nestedDirectory, { recursive: true });
+
+    fs.writeFileSync(
+      path.join(fixtureRoot, "index.js"),
+      "const index = true;"
+    );
+
+    fs.writeFileSync(
+      path.join(fixtureRoot, "connect.js"),
+      "const connect = true;"
+    );
+
+    fs.writeFileSync(
+      path.join(fixtureRoot, "worker.js"),
+      "const worker = true;"
+    );
+
+    fs.writeFileSync(
+      path.join(fixtureRoot, "services.config.js"),
+      "const config = true;"
+    );
+
+    fs.writeFileSync(
+      path.join(nestedDirectory, "nested.js"),
+      "const nested = true;"
+    );
+
+    expect(validateRuntimeFiles(fixtureRoot)).toBe(true);
+  });
+
   test("fails when a nested runtime JavaScript file has invalid syntax", () => {
     const nestedDirectory = path.join(
       fixtureRoot,
@@ -89,6 +126,29 @@ describe("checkSyntax", () => {
     expect(validateRuntimeFiles(fixtureRoot)).toBe(false);
   });
 
+  test("fails when a required root runtime file has invalid syntax", () => {
+    fs.writeFileSync(
+      path.join(fixtureRoot, "index.js"),
+      "const = ;"
+    );
+
+    fs.writeFileSync(
+      path.join(fixtureRoot, "connect.js"),
+      "const connect = true;"
+    );
+
+    fs.writeFileSync(
+      path.join(fixtureRoot, "worker.js"),
+      "const worker = true;"
+    );
+
+    fs.writeFileSync(
+      path.join(fixtureRoot, "services.config.js"),
+      "const config = true;"
+    );
+
+    expect(validateRuntimeFiles(fixtureRoot)).toBe(false);
+  });
   test("fails when a required runtime file is missing", () => {
     fs.writeFileSync(
       path.join(fixtureRoot, "index.js"),
